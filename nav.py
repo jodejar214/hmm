@@ -42,7 +42,7 @@ def setup(navx, navy, xtarget, ytarget, theta):
     rospy.loginfo("Target Turtle:"+str((xtarget,ytarget))+" , Theta:"+str(theta))
 
 #move navigating turtle to target in grid with costs
-def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm):
+def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
     global turtlePose, velPub, vel_msg
 
     rospy.init_node('social_navigation', anonymous=True)
@@ -59,7 +59,7 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm):
 
     #initial grid setup and path
     motion = AStar()
-    motion.init_grid(6, 11, (navx,navy), (xtarget,ytarget), theta, (3,4))
+    motion.init_grid(11, 6, (navx,navy), (xtarget,ytarget), theta, (3,4))
     rospy.loginfo("The Destination is: " + str((motion.end.x,motion.end.y)))
     min_path = motion.search()
 
@@ -75,7 +75,7 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm):
             move = min_path.pop(0)
 
             #face towards target
-            rospy.sleep(1)
+            rospy.sleep(1.4)
             vel_msg.angular.z = math.atan2(move[1] - prevPos[1], move[0] - prevPos[0]) - prevDir
             vel_msg.linear.x =  0
             velPub.publish(vel_msg)
@@ -96,6 +96,7 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm):
         vel_msg.linear.x =  0
         velPub.publish(vel_msg)
     else:
+        setup(navx, navy, xtarget, ytarget, theta)
         rospy.Subscriber('/nav_turtle/pose', Pose, getPose)
         velPub = rospy.Publisher('/nav_turtle/cmd_vel', Twist, queue_size=10)
         vel_msg = Twist()
@@ -169,6 +170,6 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm):
 
 if __name__ == '__main__':
     try:
-        socialNavigation(1,1,7,7,1, False, True)
+        socialNavigation(1,1,3,3,1, False, True)
     except rospy.ROSInterruptException:
         pass
