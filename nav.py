@@ -57,11 +57,9 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm):
     else:
         theta = -math.pi/2.0
 
-    setup(navx, navy, xtarget, ytarget, theta)
-
     #initial grid setup and path
     motion = AStar()
-    motion.init_grid(12, 12, (navx,navy), (xtarget,ytarget), theta, (3,4))
+    motion.init_grid(6, 11, (navx,navy), (xtarget,ytarget), theta, (3,4))
     rospy.loginfo("The Destination is: " + str((motion.end.x,motion.end.y)))
     min_path = motion.search()
 
@@ -87,7 +85,7 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm):
             #move towards target
             rospy.sleep(1)
             vel_msg.angular.z = 0
-            vel_msg.linear.x =  math.sqrt(((move[0] - prevPos[0])**2) + ((move[1] - prevPos[1])**2))
+            vel_msg.linear.x =  math.sqrt(((move[0] - prevPos[0])**2) + ((move[1] - prevPos[1])**2)) / 3.3
             velPub.publish(vel_msg)
 
             prevPos = move
