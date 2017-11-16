@@ -92,7 +92,7 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
 
         #face target turtle
         rospy.sleep(1)
-        vel_msg.angular.z = math.atan2(ytarget - turtlePose.y, xtarget - turtlePose.x) - turtlePose.theta
+        vel_msg.angular.z = math.atan2(move[1] - prevPos[1], move[0] - prevPos[0]) - prevDir
         vel_msg.linear.x =  0
         velPub.publish(vel_msg)
     else:
