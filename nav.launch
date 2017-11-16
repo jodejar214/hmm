@@ -1,0 +1,4 @@
+<launch>
+  <node name="turtlesim_node" pkg="turtlesim" type="turtlesim_node"/>
+  <node name="hmamp" pkg="mae6710" type="nav.py"/>
+</launch>
