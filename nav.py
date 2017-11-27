@@ -8,9 +8,8 @@ from turtlesim.srv import Spawn
 from turtlesim.srv import Kill
 from turtlesim.msg import Pose
 from geometry_msgs.msg import Twist
+from ViconTrackerPoseHandler import ViconTrackerPoseHandler
 
-velPub = None
-vel_msg = None
 turtlePose = None
 
 #update navigating turtle's pose
@@ -43,9 +42,10 @@ def setup(navx, navy, xtarget, ytarget, theta):
 
 #move navigating turtle to target in grid with costs
 def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
-    global turtlePose, velPub, vel_msg
+    global turtlePose
 
     rospy.init_node('social_navigation', anonymous=True)
+    vicon = ViconTrackerPoseHandler(None, None, "",51039, "ScottsHead")
 
     #setup environment
     if theta == 1:
@@ -63,6 +63,10 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
     rospy.loginfo("The Destination is: " + str((motion.end.x,motion.end.y)))
     min_path = motion.search()
 
+    rospy.loginfo("The Path is: " + str(min_path))
+    tstart = rospy.get_time()
+
+    #move robot or turtle
     if robot:
         velPub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         vel_msg = Twist()
@@ -89,9 +93,26 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
             velPub.publish(vel_msg)
 
             prevPos = move
+            motion.start = motion.cells[move]
+
+            track = vicon.getPose()
+            rospy.loginfo(track)
+            
+            # if hmm:
+            #     predict()
+            # else:
+            #     trackHumanPos = 
+            #     trackHumanDir = 
+            #     if abs(trackHumanPos - motion.human) >= 0.2 or abs(trackHumanDir - motion.htheta) >= 0.3:
+            #         motion.sum_cost[motion.human] = motion.oldCost
+            #         motion.human = trackHumanPos
+            #         motion.htheta = trackHumanDir
+            #         motion.oldCost = motion.sum_cost[motion.human]
+            #         motion.sum_cost[motion.human] += 100.0
+            #         motion.search()
 
         #face target turtle
-        rospy.sleep(1)
+        rospy.sleep(1.4)
         vel_msg.angular.z = math.atan2(move[1] - prevPos[1], move[0] - prevPos[0]) - prevDir
         vel_msg.linear.x =  0
         velPub.publish(vel_msg)
@@ -123,50 +144,11 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
         vel_msg.linear.x =  0
         velPub.publish(vel_msg)
 
-    # #use hmm to predict future position or use current position for path costs
-    # if hmm:
-    #     min_path = motion.predict()
-    # else:
-    #     motion.humanCost(motion.human, math.pi)
-    #     min_path = motion.search()
-
-    # rospy.loginfo("The Path is: " + str(min_path))
-    # tstart = rospy.get_time()
-
-    # #move towards the endpoint
-    # while len(min_path) > 0:
-    #     move = min_path.pop(0)
-
-    #     #face towards target
-    #     rospy.sleep(1)
-    #     vel_msg.angular.z = math.atan2(move[1] - turtlePose.y, move[0] - turtlePose.x) - turtlePose.theta
-    #     vel_msg.linear.x =  0
-    #     velPub.publish(vel_msg)
-
-    #     #move towards target
-    #     rospy.sleep(1)
-    #     vel_msg.angular.z = 0
-    #     vel_msg.linear.x =  math.sqrt(((move[0] - turtlePose.x)**2) + ((move[1] - turtlePose.y)**2))
-    #     velPub.publish(vel_msg)
-
-    #     #choose to change path for avoindance after each step
-    #     if hmm:
-    #         min_path = motion.predict()
-    #     else:
-    #         motion.humanCost(motion.human, 0)
-    #         min_path = motion.search()
-
-    # #face target turtle
-    # rospy.sleep(1)
-    # vel_msg.angular.z = math.atan2(ytarget - turtlePose.y, xtarget - turtlePose.x) - turtlePose.theta
-    # vel_msg.linear.x =  0
-    # velPub.publish(vel_msg)
-
-    # tend = rospy.get_time()
-    # tnav = tend - tstart
-    # rospy.loginfo("Started at: " + str(tstart))
-    # rospy.loginfo("Reached Destination at: " + str(tend))
-    # rospy.loginfo("Travelling took " + str(tnav))
+    tend = rospy.get_time()
+    tnav = tend - tstart
+    rospy.loginfo("Started at: " + str(tstart))
+    rospy.loginfo("Reached Destination at: " + str(tend))
+    rospy.loginfo("Travelling took " + str(tnav))
 
 if __name__ == '__main__':
     try:
