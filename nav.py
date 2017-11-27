@@ -45,7 +45,7 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
     global turtlePose
 
     rospy.init_node('social_navigation', anonymous=True)
-    vicon = ViconTrackerPoseHandler(None, None, "",51039, "ScottsHead")
+    # vicon = ViconTrackerPoseHandler(None, None, "",51039, "ScottsHead")
 
     #setup environment
     if theta == 1:
@@ -59,7 +59,7 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
 
     #initial grid setup and path
     motion = AStar()
-    motion.init_grid(11, 6, (navx,navy), (xtarget,ytarget), theta, (3,4))
+    motion.init_grid(11, 6, (navx,navy), (xtarget,ytarget), theta, (3,4), 0)
     rospy.loginfo("The Destination is: " + str((motion.end.x,motion.end.y)))
     min_path = motion.search()
 
@@ -89,14 +89,14 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
             #move towards target
             rospy.sleep(1)
             vel_msg.angular.z = 0
-            vel_msg.linear.x =  math.sqrt(((move[0] - prevPos[0])**2) + ((move[1] - prevPos[1])**2)) / 3.3
+            vel_msg.linear.x =  math.sqrt(((move[0] - prevPos[0])**2) + ((move[1] - prevPos[1])**2))/3
             velPub.publish(vel_msg)
 
             prevPos = move
             motion.start = motion.cells[move]
 
-            track = vicon.getPose()
-            rospy.loginfo(track)
+            # track = vicon.getPose()
+            # rospy.loginfo(track)
             
             # if hmm:
             #     predict()
@@ -114,6 +114,12 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
         #face target turtle
         rospy.sleep(1.4)
         vel_msg.angular.z = math.atan2(move[1] - prevPos[1], move[0] - prevPos[0]) - prevDir
+        vel_msg.linear.x =  0
+        velPub.publish(vel_msg)
+
+        #stop
+        rospy.sleep(1.4)
+        vel_msg.angular.z = 0
         vel_msg.linear.x =  0
         velPub.publish(vel_msg)
     else:
