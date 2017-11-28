@@ -45,7 +45,7 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
     global turtlePose
 
     rospy.init_node('social_navigation', anonymous=True)
-    # vicon = ViconTrackerPoseHandler(None, None, "",51039, "ScottsHead")
+    vicon = ViconTrackerPoseHandler(None, None, "",51039, "ScottsHead")
 
     #setup environment
     if theta == 1:
