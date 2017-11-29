@@ -123,21 +123,21 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
             #step changes
             prevPos = move
 
-            # #get human pose after move
-            # track = vicon.getPose()
-            # rospy.loginfo(track)
-            # hx = round(track[0]) #round(track[0] * 2) / 2.0
-            # hy = track[1]
-            # hdir = math.radians((math.degrees(track[2])/45)*45)
-
             #get human pose after move
-            if i < len(obs_path):
-                track = obs_path[i]
-                i+=1
-                rospy.loginfo(track)
-                hx = track[0] #round(track[0] * 2) / 2.0
-                hy = track[1]
-                hdir = track[2] #math.radians((math.degrees(track[2])/45)*45)
+            track = vicon.getPose()
+            rospy.loginfo(track)
+            hx = round(track[0]) #round(track[0] * 2) / 2.0
+            hy = round(track[1])
+            hdir = math.radians(round(math.degrees(track[2])/45)*45)
+
+            # #get human pose after move
+            # if i < len(obs_path):
+            #     track = obs_path[i]
+            #     i+=1
+            #     rospy.loginfo(track)
+            #     hx = track[0] #round(track[0] * 2) / 2.0
+            #     hy = track[1]
+            #     hdir = track[2] #math.radians((math.degrees(track[2])/45)*45)
             
             #predict if using hmms or check for movement
             if len(min_path) > 0:
@@ -316,7 +316,7 @@ if __name__ == '__main__':
             xtarget = 1
             ytarget = -3
             theta = 1
-            hmm = False
+            hmm = True
             socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot)
         else:
             navx = 1
