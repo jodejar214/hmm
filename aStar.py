@@ -4,13 +4,13 @@ import rospy
 import numpy as np
 
 N = math.radians(90)
-S = math.radians(-90)
+S = math.radians(270)
 E = math.radians(0)
 W = math.radians(180)
 NE = math.radians(45)
-SE = math.radians(-45)
+SE = math.radians(315)
 NW = math.radians(135)
-SW = math.radians(-135)
+SW = math.radians(225)
 
 class Cell(object):
     """
@@ -51,7 +51,6 @@ class AStar(object):
         self.sum_cost = None
 
         #tracking and avoidance
-        self.oldcCost = 0.0
         self.trans = {}
         self.emission = {}
         self.prevLoc = None
@@ -71,8 +70,6 @@ class AStar(object):
         self.max_width = max_width
         self.range_width = np.arange(min_width, max_width, diff)
         self.range_height = np.arange(min_height, max_height, diff)
-        rospy.loginfo(self.range_width)
-        rospy.loginfo(self.range_height)
 
         #get costs for cells in grid
         self.sum_cost = {}
@@ -83,7 +80,6 @@ class AStar(object):
         self.start = self.cells[start]
 
         #find human
-        self.oldCost = self.sum_cost[human]
         self.sum_cost[human] += 100.0
 
         #find min cost point for destination
@@ -168,8 +164,19 @@ class AStar(object):
             cell = cell.previous
             path.append((cell.x, cell.y))
 
-        path.append((self.start.x, self.start.y))
+        # path.append((self.start.x, self.start.y))
         path.reverse()
+
+        #reset for next search
+        self.opened = []
+        heapq.heapify(self.opened)
+        self.closed = set()
+        for x in self.range_width:
+            for y in self.range_height:
+                self.cells[(x,y)].previous = None
+                self.cells[(x,y)].g = 0
+                self.cells[(x,y)].h = 0
+                self.cells[(x,y)].f = 0
         return path
 
     """
@@ -223,8 +230,8 @@ class AStar(object):
             for y in self.range_height:
                 neighbors = self.get_neighbors(self.cells[(x,y)])
                 for n in neighbors:
-                    trans[((n.x,n.y),(x,y))] = 1 / (len(neighbors) +  1)
-                trans[((x,y),(x,y))] = 1 / (len(neighbors) +  1)
+                    trans[((n.x,n.y),(x,y))] = 1.0 / (len(neighbors) +  1)
+                trans[((x,y),(x,y))] = 1.0 / (len(neighbors) +  1)
 
                 for d in dirs:
                     neighborsDir, neighborF = self.neighbors_dir(self.cells[(x,y)], d)
@@ -346,7 +353,7 @@ class AStar(object):
                 em3 = self.emission[((move2,mcoor),d3)]
                 pathProb = trans1*em1*trans2*em2*trans3*em3
                 totalProb += pathProb
-            rospy.loginfo("The total prob of collision is "+totalProb)
+            rospy.loginfo("The total prob of collision is "+str(totalProb))
 
             #replan if high prob of collision occurring
             if totalProb >= 0.7:
