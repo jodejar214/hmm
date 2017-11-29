@@ -1,5 +1,6 @@
 import heapq
 import math
+import rospy
 import numpy as np
 
 N = math.radians(90)
@@ -68,8 +69,8 @@ class AStar(object):
         self.min_width = min_width
         self.max_height = max_height
         self.max_width = max_width
-        self.range_width = np.linspace(min_width, max_width, diff)
-        self.range_height = np.linspace(min_height, max_height, diff)
+        self.range_width = np.arange(min_width, max_width, diff)
+        self.range_height = np.arange(min_height, max_height, diff)
         rospy.loginfo(self.range_width)
         rospy.loginfo(self.range_height)
 
@@ -222,8 +223,8 @@ class AStar(object):
             for y in self.range_height:
                 neighbors = self.get_neighbors(self.cells[(x,y)])
                 for n in neighbors:
-                    trans[((n.x,n.y),(x,y))] = 1 / (len(n) +  1)
-                trans[((x,y),(x,y))] = 1 / (len(n) +  1)
+                    trans[((n.x,n.y),(x,y))] = 1 / (len(neighbors) +  1)
+                trans[((x,y),(x,y))] = 1 / (len(neighbors) +  1)
 
                 for d in dirs:
                     neighborsDir, neighborF = self.neighbors_dir(self.cells[(x,y)], d)
@@ -345,7 +346,12 @@ class AStar(object):
                 em3 = self.emission[((move2,mcoor),d3)]
                 pathProb = trans1*em1*trans2*em2*trans3*em3
                 totalProb += pathProb
+            rospy.loginfo("The total prob of collision is "+totalProb)
+
             #replan if high prob of collision occurring
             if totalProb >= 0.7:
                 new_path = self.search()
+                rospy.loginfo("The New Path is: " + str(new_path))
                 return new_path
+
+        
