@@ -41,11 +41,11 @@ def setup(navx, navy, xtarget, ytarget, theta):
     rospy.loginfo("Target Turtle:"+str((xtarget,ytarget))+" , Theta:"+str(theta))
 
 #move navigating turtle to target in grid with costs
-def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
+def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
     global turtlePose
 
     rospy.init_node('social_navigation', anonymous=True)
-    vicon = ViconTrackerPoseHandler(None, None, "",51039, "ScottsHead")
+    vicon = ViconTrackerPoseHandler(None, None, "", 51023, "ScottsHead")
 
     #setup environment
     if theta == 1:
@@ -57,19 +57,29 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
     else:
         theta = -math.pi/2.0
 
-    #initial grid setup and path
-    motion = AStar()
-    motion.init_grid(11, 6, (navx,navy), (xtarget,ytarget), theta, (3,4), 0)
-    rospy.loginfo("The Destination is: " + str((motion.end.x,motion.end.y)))
-    min_path = motion.search()
-
-    rospy.loginfo("The Path is: " + str(min_path))
-    tstart = rospy.get_time()
-
     #move robot or turtle
     if robot:
+        rospy.loginfo("Start Robot")
+
+        #initialize grid setup and path
+        motion = AStar()
+        human = (3,4)
+        htheta = 0
+        motion.init_grid(-3, -3, 3.5, 3.5, 0.5, (navx,navy), (xtarget,ytarget), theta, human)
+        rospy.loginfo("The Destination is: " + str((motion.end.x,motion.end.y)))
+        min_path = motion.search()
+        rospy.loginfo("The Path is: " + str(min_path))
+
+        inp = raw_input("Press Enter to Start Navigation")
+
+        tstart = rospy.get_time()
         velPub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         vel_msg = Twist()
+
+        #keep track of old human and robot pose
+        oldhx = human[0]
+        oldhy = human[1]
+        oldhdir = htheta
 
         prevDir = 0
         prevPos = (navx,navy)
@@ -79,7 +89,7 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
             move = min_path.pop(0)
 
             #face towards target
-            rospy.sleep(1.4)
+            rospy.sleep(1)
             vel_msg.angular.z = math.atan2(move[1] - prevPos[1], move[0] - prevPos[0]) - prevDir
             vel_msg.linear.x =  0
             velPub.publish(vel_msg)
@@ -87,29 +97,48 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
             prevDir += vel_msg.angular.z
 
             #move towards target
-            rospy.sleep(1)
+            rospy.sleep(1.1)
             vel_msg.angular.z = 0
             vel_msg.linear.x =  math.sqrt(((move[0] - prevPos[0])**2) + ((move[1] - prevPos[1])**2))/3
             velPub.publish(vel_msg)
 
+            #stop moving
+            rospy.sleep(1.4)
+            vel_msg.angular.z = 0
+            vel_msg.linear.x = 0
+            velPub.publish(vel_msg)
+
+            #step changes
             prevPos = move
             motion.start = motion.cells[move]
 
-            # track = vicon.getPose()
-            # rospy.loginfo(track)
+            #get human pose after move
+            track = vicon.getPose()
+            rospy.loginfo(track)
+            hx = track[0] #round(track[0] * 2) / 2.0
+            hy = track[1]
+            hdir = track[2]
             
-            # if hmm:
-            #     predict()
-            # else:
-            #     trackHumanPos = 
-            #     trackHumanDir = 
-            #     if abs(trackHumanPos - motion.human) >= 0.2 or abs(trackHumanDir - motion.htheta) >= 0.3:
-            #         motion.sum_cost[motion.human] = motion.oldCost
-            #         motion.human = trackHumanPos
-            #         motion.htheta = trackHumanDir
-            #         motion.oldCost = motion.sum_cost[motion.human]
-            #         motion.sum_cost[motion.human] += 100.0
-            #         motion.search()
+            #predict if using hmms or check for movement
+            if hmm:
+                min_path = predict(min_path, (hx,hy), hdir)
+            else:
+                #check conditions for replan
+                dist = math.sqrt(((hx - oldhx)**2) + ((hy - oldhy)**2))
+                angle = abs(hdir - oldhdir)
+                if dist >= 0.2 or angle >= 0.3:
+                    #redo change to cost of old human position
+                    motion.sum_cost[(hx,hy)] = motion.oldCost
+                    #update changes to cost
+                    motion.oldCost = motion.sum_cost[(hx,hy)]
+                    motion.sum_cost[(hx,hy)] += 100.0
+                    #replan
+                    min_path = motion.search()
+
+            #update changes human variables
+            oldhx = hx
+            oldhy = hy
+            oldhdir = hdir
 
         #face target turtle
         rospy.sleep(1.4)
@@ -123,10 +152,28 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
         vel_msg.linear.x =  0
         velPub.publish(vel_msg)
     else:
+        rospy.loginfo("Start Turtle Simulation")
+
+        #initialize grid and path
+        motion = AStar()
+        human = (2,4)
+        htheta = 0
+        motion.init_grid(1, 1, 12, 12, 1, (navx,navy), (xtarget,ytarget), theta, human, htheta)
+        rospy.loginfo("The Destination is: " + str((motion.end.x,motion.end.y)))
+        min_path = motion.search()
+        rospy.loginfo("The Path is: " + str(min_path))
+
+        inp = raw_input("Press Enter to Start Navigation")
+        tstart = rospy.get_time()
+
         setup(navx, navy, xtarget, ytarget, theta)
         rospy.Subscriber('/nav_turtle/pose', Pose, getPose)
         velPub = rospy.Publisher('/nav_turtle/cmd_vel', Twist, queue_size=10)
         vel_msg = Twist()
+
+        oldhx = human[0]
+        oldhy = human[1]
+        oldhdir = htheta
 
         #move towards the endpoint
         while len(min_path) > 0:
@@ -144,6 +191,34 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
             vel_msg.linear.x =  math.sqrt(((move[0] - turtlePose.x)**2) + ((move[1] - turtlePose.y)**2))
             velPub.publish(vel_msg)
 
+            #get human pose after move
+            track = vicon.getPose()
+            rospy.loginfo(track)
+            hx = track[0] #round(track[0] * 2) / 2.0
+            hy = track[1]
+            hdir = track[2]
+            
+            #predict if using hmms or check for movement
+            if hmm:
+                min_path = predict(min_path, (hx,hy), hdir)
+            else:
+                #check conditions for replan
+                dist = math.sqrt(((hx - oldhx)**2) + ((hy - oldhy)**2))
+                angle = abs(hdir - oldhdir)
+                if dist >= 0.2 or angle >= 0.3:
+                    #redo change to cost of old human position
+                    motion.sum_cost[(hx,hy)] = motion.oldCost
+                    #update changes to cost
+                    motion.oldCost = motion.sum_cost[(hx,hy)]
+                    motion.sum_cost[(hx,hy)] += 100.0
+                    #replan
+                    min_path = motion.search()
+
+            #update changes human variables
+            oldhx = hx
+            oldhy = hy
+            oldhdir = hdir
+
         #face target turtle
         rospy.sleep(1)
         vel_msg.angular.z = math.atan2(ytarget - turtlePose.y, xtarget - turtlePose.x) - turtlePose.theta
@@ -158,6 +233,22 @@ def socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot):
 
 if __name__ == '__main__':
     try:
-        socialNavigation(1,1,3,3,1, False, True)
+        robot = True
+        if robot:
+            navx = 3
+            navy = -3
+            xtarget = 3
+            ytarget = 2
+            theta = 1
+            hmm = False
+            socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot)
+        else:
+            navx = 1
+            navy = 1
+            xtarget = 5
+            ytarget = 9
+            theta = 1
+            hmm = False
+            socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot)
     except rospy.ROSInterruptException:
         pass

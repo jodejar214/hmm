@@ -1,5 +1,6 @@
 import heapq
 import math
+import numpy as np
 
 N = math.radians(90)
 S = math.radians(-90)
@@ -40,13 +41,15 @@ class AStar(object):
 
         #grid init
         self.cells = {}
-        self.grid_height = None
-        self.grid_width = None
+        self.min_height = None
+        self.min_width = None
+        self.max_height = None
+        self.max_width = None
+        self.range_width = None
+        self.range_height = None
         self.sum_cost = None
 
         #tracking and avoidance
-        self.human = None
-        self.htheta = None
         self.oldcCost = 0.0
         self.trans = {}
         self.emission = {}
@@ -59,28 +62,34 @@ class AStar(object):
     and determines the best end position without taking into
     account the human obstacle.
     """
-    def init_grid(self, width, height, start, goal, theta, human, htheta):
-        #create cells for grid and get their cost
+    def init_grid(self, min_width, min_height, max_width, max_height, diff, start, goal, theta, human):
+        #dimensions and intervals of grid
+        self.min_height = min_height
+        self.min_width = min_width
+        self.max_height = max_height
+        self.max_width = max_width
+        self.range_width = np.linspace(min_width, max_width, diff)
+        self.range_height = np.linspace(min_height, max_height, diff)
+        rospy.loginfo(self.range_width)
+        rospy.loginfo(self.range_height)
+
+        #get costs for cells in grid
         self.sum_cost = {}
-        self.grid_height = height
-        self.grid_width = width
-        for x in range(1,self.grid_width):
-            for y in range(1,self.grid_height):
+        for x in self.range_width:
+            for y in self.range_height:
                 self.cells[(x,y)] = Cell(x, y)
                 self.sum_cost[(x,y)] = self.getCost(x, y, goal, theta)
         self.start = self.cells[start]
 
         #find human
-        self.human = human
-        self.htheta = htheta
-        self.oldCost = self.sum_cost[self.human]
-        self.sum_cost[self.human] += 100.0
+        self.oldCost = self.sum_cost[human]
+        self.sum_cost[human] += 100.0
 
         #find min cost point for destination
         min_coor = start
         min_cost = self.sum_cost[min_coor]
-        for x in range(1,self.grid_width):
-            for y in range(1,self.grid_height):
+        for x in self.range_width:
+            for y in self.range_height:
                 if self.sum_cost[(x,y)] < min_cost:
                     min_coor = (x,y)
                     min_cost = self.sum_cost[min_coor]
@@ -88,7 +97,7 @@ class AStar(object):
 
         #get probs for HMM
         self.initProb = 1.0
-        # self.trans, self.emission = self.makeProbs()
+        self.trans, self.emission = self.makeProbs()
 
     """
     Calculates the cost of each cell in the grid using 
@@ -123,28 +132,28 @@ class AStar(object):
     def get_neighbors(self, cell):
         neighbors = []
         #not on right border
-        if cell.x < self.grid_width-1:
+        if cell.x < self.max_width-1:
             neighbors.append(self.cells[(cell.x+1, cell.y)])
         #not on right border and bottom border
-        if cell.x < self.grid_width-1 and cell.y > 1:
+        if cell.x < self.max_width-1 and cell.y > self.min_height:
             neighbors.append(self.cells[(cell.x+1, cell.y-1)])
         #not on bottom border
-        if cell.y > 1:
+        if cell.y > self.min_height:
             neighbors.append(self.cells[(cell.x, cell.y-1)])
         #not on left border and bottom border
-        if cell.x > 1 and cell.y > 1:
+        if cell.x > self.min_width and cell.y > self.min_height:
             neighbors.append(self.cells[(cell.x-1, cell.y-1)])
         #not on left border
-        if cell.x > 1:
+        if cell.x > self.min_width:
             neighbors.append(self.cells[(cell.x-1, cell.y)])
         #not on left border and top border
-        if cell.x > 1 and cell.y < self.grid_height-1:
+        if cell.x > self.min_width and cell.y < self.max_height-1:
             neighbors.append(self.cells[(cell.x-1, cell.y+1)])
         #not on top border
-        if cell.y < self.grid_height-1:
+        if cell.y < self.max_height-1:
             neighbors.append(self.cells[(cell.x, cell.y+1)])
         #not on right border and top border
-        if cell.x < self.grid_width-1 and cell.y < self.grid_height-1:
+        if cell.x < self.max_width-1 and cell.y < self.max_height-1:
             neighbors.append(self.cells[(cell.x+1, cell.y+1)])
         return neighbors
 
@@ -209,8 +218,8 @@ class AStar(object):
         emission = {}
 
         dirs = [N,NE,E,SE,S,SW,W,NW]
-        for x in range(self.grid_width):
-            for y in range(self.grid_height):
+        for x in self.range_width:
+            for y in self.range_height:
                 neighbors = self.get_neighbors(self.cells[(x,y)])
                 for n in neighbors:
                     trans[((n.x,n.y),(x,y))] = 1 / (len(n) +  1)
@@ -244,49 +253,49 @@ class AStar(object):
         neighbors = []
         neighborD = None
         #not on right border
-        if cell.x < self.grid_width-1 and (direction == E or direction == SE or direction == NE):
+        if cell.x < self.max_width-1 and (direction == E or direction == SE or direction == NE):
             if direction == E:
                 neighborD = self.cells[(cell.x+1, cell.y)]
             else:
                 neighbors.append(self.cells[(cell.x+1, cell.y)])
         #not on right border and bottom border
-        if cell.x < self.grid_width-1 and cell.y > 1 and (direction == E or direction == SE or direction == S):
+        if cell.x < self.max_width-1 and cell.y > self.min_height and (direction == E or direction == SE or direction == S):
             if direction == SE:
                 neighborD = self.cells[(cell.x+1, cell.y-1)]
             else:
                 neighbors.append(self.cells[(cell.x+1, cell.y-1)])
         #not on bottom border
-        if cell.y > 1 and (direction == S or direction == SE or direction == SW):
+        if cell.y > self.min_height and (direction == S or direction == SE or direction == SW):
             if direction == S:
                 neighborD = self.cells[(cell.x, cell.y-1)]
             else:
                 neighbors.append(self.cells[(cell.x, cell.y-1)])
         #not on left border and bottom border
-        if cell.x > 1 and cell.y > 1 and (direction == W or direction == SW or direction == S):
+        if cell.x > self.min_width and cell.y > self.min_height and (direction == W or direction == SW or direction == S):
             if direction == SW:
                 neighborD = self.cells[(cell.x-1, cell.y-1)]
             else:
                 neighbors.append(self.cells[(cell.x-1, cell.y-1)])
         #not on left border
-        if cell.x > 1 and (direction == W or direction == SW or direction == NW):
+        if cell.x > self.min_width and (direction == W or direction == SW or direction == NW):
             if direction == W:
                 neighborD = self.cells[(cell.x-1, cell.y)]
             else:
                 neighbors.append(self.cells[(cell.x-1, cell.y)])
         #not on left border and top border
-        if cell.x > 1 and cell.y < self.grid_height-1 and (direction == W or direction == NW or direction == N):
+        if cell.x > self.min_width and cell.y < self.max_height-1 and (direction == W or direction == NW or direction == N):
             if direction == NW:
                 neighborD = self.cells[(cell.x-1, cell.y+1)]
             else:
                 neighbors.append(self.cells[(cell.x-1, cell.y+1)])
         #not on top border
-        if cell.y < self.grid_height-1 and (direction == N or direction == NW or direction == NE):
+        if cell.y < self.max_height-1 and (direction == N or direction == NW or direction == NE):
             if direction == N:
                 neighborD = self.cells[(cell.x, cell.y+1)]
             else:
                 neighbors.append(self.cells[(cell.x, cell.y+1)])
         #not on right border and top border
-        if cell.x < self.grid_width-1 and cell.y < self.grid_height-1 and (direction == E or direction == N or direction == NE):
+        if cell.x < self.max_width-1 and cell.y < self.max_height-1 and (direction == E or direction == N or direction == NE):
             if direction == NE:
                 neighborD = self.cells[(cell.x+1, cell.y+1)]
             else:
@@ -301,13 +310,15 @@ class AStar(object):
     def pathProbs(self, path, humanPos, humanDir):
         #get possible 2 step paths from human's current position
         #that may collide with robot in 2 steps
-        move2 = path[2]
+        move2 = path[1]
         rneigh = self.get_neighbors(self.cells[move2])
         hneigh = self.get_neighbors(self.cells[humanPos])
         midCells = []
+        #reachable in 2 moves
         for n in rneigh:
             if n in hneigh:
                 midCells.append(n)
+        #reachable by staying once and moving once
         if move2 in hneigh:
             midCells.append(humanPos)
             midCells.append(move2)
@@ -338,5 +349,3 @@ class AStar(object):
             if totalProb >= 0.7:
                 new_path = self.search()
                 return new_path
-
-        
