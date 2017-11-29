@@ -96,8 +96,6 @@ class AStar(object):
         #get probs for HMM
         self.initProb = 1.0
         self.trans, self.emission = self.makeProbs()
-        rospy.loginfo(self.trans)
-        rospy.loginfo(self.emission)
 
     """
     Calculates the cost of each cell in the grid using 
