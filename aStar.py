@@ -51,6 +51,7 @@ class AStar(object):
         self.sum_cost = None
 
         #tracking and avoidance
+        self.changed = []
         self.trans = {}
         self.emission = {}
         self.prevLoc = None
@@ -95,6 +96,8 @@ class AStar(object):
         #get probs for HMM
         self.initProb = 1.0
         self.trans, self.emission = self.makeProbs()
+        rospy.loginfo(self.trans)
+        rospy.loginfo(self.emission)
 
     """
     Calculates the cost of each cell in the grid using 
@@ -332,11 +335,9 @@ class AStar(object):
             midCells.append(move2)
 
         #determine if human likely to take path that may collide
+        changeCells = []
         if len(midCells) != 0:
-            return path
-        else:
             #calculate prob of going in path using HMMs
-            totalProb = 0.0
             for m in midCells:
                 mcoor = (m.x,m.y)
                 #transitions
@@ -347,18 +348,29 @@ class AStar(object):
                 d1 = humanDir
                 d2 = math.atan2(humanPos[1] - mcoor[1], humanPos[0] - mcoor[0]) - humanDir
                 d3 = math.atan2(mcoor[1] - move2[1], mcoor[0] - move2[0]) - d2
+                if d1 < 0.0:
+                    d1 += (math.pi * 2.0)
+                if d2 < 0.0:
+                    d2 += (math.pi * 2.0)
+                if d3 < 0.0:
+                    d3 += (math.pi * 2.0)
                 #emissions
                 em1 = self.emission[((humanPos,humanPos),d1)]
                 em2 = self.emission[((mcoor,humanPos),d2)]
                 em3 = self.emission[((move2,mcoor),d3)]
-                pathProb = trans1*em1*trans2*em2*trans3*em3
-                totalProb += pathProb
-            rospy.loginfo("The total prob of collision is "+str(totalProb))
+                pathProb = trans1*em1+trans2*em2+trans3*em3
+                rospy.loginfo("The prob of collision with midCell (" + str(m.x) + "," + str(m.y) + ") is " + str(pathProb))
 
-            #replan if high prob of collision occurring
-            if totalProb >= 0.7:
-                new_path = self.search()
-                rospy.loginfo("The New Path is: " + str(new_path))
-                return new_path
+                #add cell if high prob of collision occurring
+                if pathProb >= 0.045:
+                    changeCells.append(mcoor)
 
+        #adjust costs if needed
+        if len(changeCells) > 0:
+            changeCells.append(move2)
+            for c in changeCells:
+                self.sum_cost[c] += 100.0
+                self.changed.append(c)
+            return True
+        return False
         

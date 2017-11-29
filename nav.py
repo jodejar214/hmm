@@ -181,9 +181,12 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
         oldhx = human[0]
         oldhy = human[1]
         oldhdir = htheta
+
+        motion.changed.append(human)
         oldneighbors = motion.get_neighbors(motion.cells[(oldhx,oldhy)])
         for n in oldneighbors:
             motion.sum_cost[(n.x,n.y)] += 100.0
+            motion.changed.append((n.x,n.y))
 
         #move towards the endpoint
         while len(min_path) > 0:
@@ -213,21 +216,30 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
             #predict if using hmms or check for movement
             if len(min_path) > 0:
                 if hmm:
-                    motion.sum_cost[(oldhx,oldhy)] -= 100.0
-                    for n in oldneighbors:
-                        motion.sum_cost[(n.x,n.y)] -= 100.0
-                    min_path = motion.pathProbs(min_path, (hx,hy), hdir)
+                    #redo changes
+                    for c in motion.changed:
+                        motion.sum_cost[c] -= 100.0
+                    motion.changed = []
+
+                    if len(min_path) > 1:
+                        #replan if high prob of collision
+                        change = motion.pathProbs(min_path, (hx,hy), hdir)
+                        if change:
+                            motion.start = motion.cells[move]
+                            min_path = motion.search()
+                            rospy.loginfo("The New Path is: " + str(min_path))
                 else:
                     #check conditions for replan
                     dist = math.sqrt(((hx - oldhx)**2) + ((hy - oldhy)**2))
                     angle = abs(hdir - oldhdir)
 
+                    #undo changes to cost
+                    motion.sum_cost[(oldhx,oldhy)] -= 100.0
+                    for n in oldneighbors:
+                        motion.sum_cost[(n.x,n.y)] -= 100.0
+
                     if dist >= 0.2 or angle >= 0.3:
                         #update changes to cost
-                        motion.sum_cost[(oldhx,oldhy)] -= 100.0
-                        for n in oldneighbors:
-                            motion.sum_cost[(n.x,n.y)] -= 100.0
-
                         motion.sum_cost[(hx,hy)] += 100.0
                         neighbors = motion.get_neighbors(motion.cells[(hx,hy)])
                         for n in neighbors:
