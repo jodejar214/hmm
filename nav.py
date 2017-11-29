@@ -64,11 +64,11 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
         rospy.loginfo("Start Robot")
 
         #initialize grid setup and path
-        # vicon = ViconTrackerPoseHandler(None, None, "", 51023, "ScottsHead")
+        vicon = ViconTrackerPoseHandler(None, None, "", 51023, "ScottsHead")
         motion = AStar()
         human = (0,0)
         htheta = 0
-        motion.init_grid(-3, -3, 3.5, 3.5, 0.5, (navx,navy), (xtarget,ytarget), theta, human)
+        motion.init_grid(-3, -3, 4, 4, 1, (navx,navy), (xtarget,ytarget), theta, human)
         rospy.loginfo("The Destination is: " + str((motion.end.x,motion.end.y)))
         min_path = motion.search()
         rospy.loginfo("The Path is: " + str(min_path))
@@ -87,7 +87,7 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
         prevDir = 0
         prevPos = (navx,navy)
 
-        obs_path = 
+        obs_path = [(1,1,0),(2,2,0),(3,3,0)]
         i = 0
 
         motion.changed.append(human)
@@ -111,11 +111,11 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
             #move towards target
             rospy.sleep(1.1)
             vel_msg.angular.z = 0
-            vel_msg.linear.x =  math.sqrt(((move[0] - prevPos[0])**2) + ((move[1] - prevPos[1])**2))/3
+            vel_msg.linear.x =  math.sqrt(((move[0] - prevPos[0])**2) + ((move[1] - prevPos[1])**2))
             velPub.publish(vel_msg)
 
             #stop moving
-            rospy.sleep(1.4)
+            rospy.sleep(2)
             vel_msg.angular.z = 0
             vel_msg.linear.x = 0
             velPub.publish(vel_msg)
@@ -126,9 +126,9 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
             # #get human pose after move
             # track = vicon.getPose()
             # rospy.loginfo(track)
-            # hx = track[0] #round(track[0] * 2) / 2.0
+            # hx = round(track[0]) #round(track[0] * 2) / 2.0
             # hy = track[1]
-            # hdir = track[2] #math.radians((math.degrees(track[2])/45)*45)
+            # hdir = math.radians((math.degrees(track[2])/45)*45)
 
             #get human pose after move
             if i < len(obs_path):
@@ -309,12 +309,12 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
 
 if __name__ == '__main__':
     try:
-        robot = False
+        robot = True
         if robot:
-            navx = 3
-            navy = -3
-            xtarget = 3
-            ytarget = 2
+            navx = 2
+            navy = 2
+            xtarget = 1
+            ytarget = -3
             theta = 1
             hmm = False
             socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot)

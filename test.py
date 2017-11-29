@@ -7,10 +7,11 @@ import math
 def run():
 	rospy.init_node("test", anonymous=True)
 
-	vicon = ViconTrackerPoseHandler(None, None, "",51039, "ScottsHead")
+	vicon = ViconTrackerPoseHandler(None, None, "",51023, "ScottsHead")
 
 	for i in range(0,4):
 		rospy.sleep(2.5)
+		print vicon.getPose()
 		rospy.loginfo(vicon.getPose())
 
 	# pub = rospy.Publisher("/cmd_vel", Twist, queue_size=10)
