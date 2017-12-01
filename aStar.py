@@ -313,7 +313,6 @@ class AStar(object):
                 neighbors.append(self.cells[(cell.x+self.diff, cell.y+self.diff)])
         return neighbors, neighborD
 
-
     """
     Calculate the probability of the human taking paths that will collide with the
     robot in 2 moves using HMMs
@@ -346,8 +345,11 @@ class AStar(object):
                 trans3 = self.trans[(move2,mcoor)]
                 #directions = assume facing the direction will be in for future moves
                 d1 = humanDir
-                d2 = math.atan2(humanPos[1] - mcoor[1], humanPos[0] - mcoor[0]) - humanDir
-                d3 = math.atan2(mcoor[1] - move2[1], mcoor[0] - move2[0]) - d2
+                d2 = math.atan2(mcoor[1] - humanPos[1], mcoor[0] - humanPos[0]) - humanDir
+                d3 = math.atan2(move2[1] - mcoor[1], move2[0] - mcoor[0]) - d2
+                d1 = math.radians(round(math.degrees(d1)/45)*45)
+                d2 = math.radians(round(math.degrees(d2)/45)*45)
+                d3 = math.radians(round(math.degrees(d3)/45)*45)
                 if d1 < 0.0:
                     d1 += (math.pi * 2.0)
                 if d2 < 0.0:
@@ -363,11 +365,13 @@ class AStar(object):
 
                 #add cell if high prob of collision occurring
                 if pathProb >= 0.045:
-                    changeCells.append(mcoor)
+                    for n in hneigh:
+                        changeCells.append((n.x,n.y))
 
         #adjust costs if needed
         if len(changeCells) > 0:
-            changeCells.append(move2)
+            if move2 not in changeCells:
+                changeCells.append(move2)
             for c in changeCells:
                 self.sum_cost[c] += 100.0
                 self.changed.append(c)
