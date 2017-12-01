@@ -1,18 +1,25 @@
 #!/usr/bin/env python
-from geometry_msgs.msg import Twist
-from ViconTrackerPoseHandler import ViconTrackerPoseHandler
-import rospy
+# from geometry_msgs.msg import Twist
+# from ViconTrackerPoseHandler import ViconTrackerPoseHandler
+# import rospy
 import math
 
 def run():
-	rospy.init_node("test", anonymous=True)
+	a = math.sqrt(((0.25 - 0.5)**2) + ((0.25 - 0.5)**2))
+	b = math.sqrt(((0.25 - 0.5)**2) + ((0.25 - 0.25)**2))
+	
+	angle = math.atan2(3 - 1, 3 - 1) - 0
+	angle2 = math.atan2(1 - 3, 1 - 3) - 0
+	print(math.degrees(angle))
+	print(math.degrees(angle2))
+	# rospy.init_node("test", anonymous=True)
 
-	vicon = ViconTrackerPoseHandler(None, None, "",51023, "ScottsHead")
+	# vicon = ViconTrackerPoseHandler(None, None, "",51023, "ScottsHead")
 
-	for i in range(0,4):
-		rospy.sleep(2.5)
-		print vicon.getPose()
-		rospy.loginfo(vicon.getPose())
+	# for i in range(0,4):
+	# 	rospy.sleep(2.5)
+	# 	print vicon.getPose()
+	# 	rospy.loginfo(vicon.getPose())
 
 	# pub = rospy.Publisher("/cmd_vel", Twist, queue_size=10)
 	# for i in range(0,3):
@@ -28,7 +35,7 @@ def run():
 	# 	pub.publish(vel)
 	# 	vel.angular.z = 0
 	# 	pub.publish(vel)
-	rospy.loginfo("done")
+	# rospy.loginfo("done")
 if __name__ == "__main__":
 	run()
 

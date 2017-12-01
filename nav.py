@@ -68,7 +68,7 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
         motion = AStar()
         human = (0,0)
         htheta = 0
-        motion.init_grid(-3, -3, 4, 4, 1, (navx,navy), (xtarget,ytarget), theta, human)
+        motion.init_grid(-3., -3., 3.5, 3.5, 0.5, (navx,navy), (xtarget,ytarget), theta, human)
         rospy.loginfo("The Destination is: " + str((motion.end.x,motion.end.y)))
         min_path = motion.search()
         rospy.loginfo("The Path is: " + str(min_path))
@@ -86,9 +86,6 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
 
         prevDir = 0
         prevPos = (navx,navy)
-
-        obs_path = [(1,1,0),(2,2,0),(3,3,0)]
-        i = 0
 
         motion.changed.append(human)
         oldneighbors = motion.get_neighbors(motion.cells[(oldhx,oldhy)])
@@ -129,15 +126,6 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
             hx = round(track[0]) #round(track[0] * 2) / 2.0
             hy = round(track[1])
             hdir = math.radians(round(math.degrees(track[2])/45)*45)
-
-            # #get human pose after move
-            # if i < len(obs_path):
-            #     track = obs_path[i]
-            #     i+=1
-            #     rospy.loginfo(track)
-            #     hx = track[0] #round(track[0] * 2) / 2.0
-            #     hy = track[1]
-            #     hdir = track[2] #math.radians((math.degrees(track[2])/45)*45)
             
             #predict if using hmms or check for movement
             if len(min_path) > 0:
@@ -250,9 +238,9 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
                 track = obs_path[i]
                 i+=1
                 rospy.loginfo(track)
-                hx = track[0] #round(track[0] * 2) / 2.0
+                hx = track[0]
                 hy = track[1]
-                hdir = track[2] #math.radians((math.degrees(track[2])/45)*45)
+                hdir = track[2]
             
             #predict if using hmms or check for movement
             if len(min_path) > 0:
@@ -309,7 +297,7 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
 
 if __name__ == '__main__':
     try:
-        robot = True
+        robot = False
         if robot:
             navx = 2
             navy = 2

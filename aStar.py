@@ -46,6 +46,7 @@ class AStar(object):
         self.min_width = None
         self.max_height = None
         self.max_width = None
+        self.diff = 0.0
         self.range_width = None
         self.range_height = None
         self.sum_cost = None
@@ -69,6 +70,7 @@ class AStar(object):
         self.min_width = min_width
         self.max_height = max_height
         self.max_width = max_width
+        self.diff = diff
         self.range_width = np.arange(min_width, max_width, diff)
         self.range_height = np.arange(min_height, max_height, diff)
 
@@ -130,29 +132,29 @@ class AStar(object):
     def get_neighbors(self, cell):
         neighbors = []
         #not on right border
-        if cell.x < self.max_width-1:
-            neighbors.append(self.cells[(cell.x+1, cell.y)])
+        if cell.x < self.max_width-self.diff:
+            neighbors.append(self.cells[(cell.x+self.diff, cell.y)])
         #not on right border and bottom border
-        if cell.x < self.max_width-1 and cell.y > self.min_height:
-            neighbors.append(self.cells[(cell.x+1, cell.y-1)])
+        if cell.x < self.max_width-self.diff and cell.y > self.min_height:
+            neighbors.append(self.cells[(cell.x+self.diff, cell.y-self.diff)])
         #not on bottom border
         if cell.y > self.min_height:
-            neighbors.append(self.cells[(cell.x, cell.y-1)])
+            neighbors.append(self.cells[(cell.x, cell.y-self.diff)])
         #not on left border and bottom border
         if cell.x > self.min_width and cell.y > self.min_height:
-            neighbors.append(self.cells[(cell.x-1, cell.y-1)])
+            neighbors.append(self.cells[(cell.x-self.diff, cell.y-self.diff)])
         #not on left border
         if cell.x > self.min_width:
-            neighbors.append(self.cells[(cell.x-1, cell.y)])
+            neighbors.append(self.cells[(cell.x-self.diff, cell.y)])
         #not on left border and top border
-        if cell.x > self.min_width and cell.y < self.max_height-1:
-            neighbors.append(self.cells[(cell.x-1, cell.y+1)])
+        if cell.x > self.min_width and cell.y < self.max_height-self.diff:
+            neighbors.append(self.cells[(cell.x-self.diff, cell.y+self.diff)])
         #not on top border
-        if cell.y < self.max_height-1:
-            neighbors.append(self.cells[(cell.x, cell.y+1)])
+        if cell.y < self.max_height-self.diff:
+            neighbors.append(self.cells[(cell.x, cell.y+self.diff)])
         #not on right border and top border
-        if cell.x < self.max_width-1 and cell.y < self.max_height-1:
-            neighbors.append(self.cells[(cell.x+1, cell.y+1)])
+        if cell.x < self.max_width-self.diff and cell.y < self.max_height-self.diff:
+            neighbors.append(self.cells[(cell.x+self.diff, cell.y+self.diff)])
         return neighbors
 
     """
@@ -262,53 +264,53 @@ class AStar(object):
         neighbors = []
         neighborD = None
         #not on right border
-        if cell.x < self.max_width-1 and (direction == E or direction == SE or direction == NE):
+        if cell.x < self.max_width-self.diff and (direction == E or direction == SE or direction == NE):
             if direction == E:
-                neighborD = self.cells[(cell.x+1, cell.y)]
+                neighborD = self.cells[(cell.x+self.diff, cell.y)]
             else:
-                neighbors.append(self.cells[(cell.x+1, cell.y)])
+                neighbors.append(self.cells[(cell.x+self.diff, cell.y)])
         #not on right border and bottom border
-        if cell.x < self.max_width-1 and cell.y > self.min_height and (direction == E or direction == SE or direction == S):
+        if cell.x < self.max_width-self.diff and cell.y > self.min_height and (direction == E or direction == SE or direction == S):
             if direction == SE:
-                neighborD = self.cells[(cell.x+1, cell.y-1)]
+                neighborD = self.cells[(cell.x+self.diff, cell.y-self.diff)]
             else:
-                neighbors.append(self.cells[(cell.x+1, cell.y-1)])
+                neighbors.append(self.cells[(cell.x+self.diff, cell.y-self.diff)])
         #not on bottom border
         if cell.y > self.min_height and (direction == S or direction == SE or direction == SW):
             if direction == S:
-                neighborD = self.cells[(cell.x, cell.y-1)]
+                neighborD = self.cells[(cell.x, cell.y-self.diff)]
             else:
-                neighbors.append(self.cells[(cell.x, cell.y-1)])
+                neighbors.append(self.cells[(cell.x, cell.y-self.diff)])
         #not on left border and bottom border
         if cell.x > self.min_width and cell.y > self.min_height and (direction == W or direction == SW or direction == S):
             if direction == SW:
-                neighborD = self.cells[(cell.x-1, cell.y-1)]
+                neighborD = self.cells[(cell.x-self.diff, cell.y-self.diff)]
             else:
-                neighbors.append(self.cells[(cell.x-1, cell.y-1)])
+                neighbors.append(self.cells[(cell.x-self.diff, cell.y-self.diff)])
         #not on left border
         if cell.x > self.min_width and (direction == W or direction == SW or direction == NW):
             if direction == W:
-                neighborD = self.cells[(cell.x-1, cell.y)]
+                neighborD = self.cells[(cell.x-self.diff, cell.y)]
             else:
-                neighbors.append(self.cells[(cell.x-1, cell.y)])
+                neighbors.append(self.cells[(cell.x-self.diff, cell.y)])
         #not on left border and top border
-        if cell.x > self.min_width and cell.y < self.max_height-1 and (direction == W or direction == NW or direction == N):
+        if cell.x > self.min_width and cell.y < self.max_height-self.diff and (direction == W or direction == NW or direction == N):
             if direction == NW:
-                neighborD = self.cells[(cell.x-1, cell.y+1)]
+                neighborD = self.cells[(cell.x-self.diff, cell.y+self.diff)]
             else:
-                neighbors.append(self.cells[(cell.x-1, cell.y+1)])
+                neighbors.append(self.cells[(cell.x-self.diff, cell.y+self.diff)])
         #not on top border
-        if cell.y < self.max_height-1 and (direction == N or direction == NW or direction == NE):
+        if cell.y < self.max_height-self.diff and (direction == N or direction == NW or direction == NE):
             if direction == N:
-                neighborD = self.cells[(cell.x, cell.y+1)]
+                neighborD = self.cells[(cell.x, cell.y+self.diff)]
             else:
-                neighbors.append(self.cells[(cell.x, cell.y+1)])
+                neighbors.append(self.cells[(cell.x, cell.y+self.diff)])
         #not on right border and top border
-        if cell.x < self.max_width-1 and cell.y < self.max_height-1 and (direction == E or direction == N or direction == NE):
+        if cell.x < self.max_width-self.diff and cell.y < self.max_height-self.diff and (direction == E or direction == N or direction == NE):
             if direction == NE:
-                neighborD = self.cells[(cell.x+1, cell.y+1)]
+                neighborD = self.cells[(cell.x+self.diff, cell.y+self.diff)]
             else:
-                neighbors.append(self.cells[(cell.x+1, cell.y+1)])
+                neighbors.append(self.cells[(cell.x+self.diff, cell.y+self.diff)])
         return neighbors, neighborD
 
 
