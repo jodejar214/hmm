@@ -104,15 +104,22 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
             velPub.publish(vel_msg)
 
             prevDir += vel_msg.angular.z
+            angle = math.radians(round(math.degrees(vel_msg.angular.z)/45)*45)
+            if angle == 45 or angle == -45:
+                rospy.sleep(1.17)
+            elif angle == 90 or -90:
+                rospy.sleep(1.11)
+            else:
+                rospy.sleep(1.1)
 
             #move towards target
             rospy.sleep(1.1)
             vel_msg.angular.z = 0
             vel_msg.linear.x =  math.sqrt(((move[0] - prevPos[0])**2) + ((move[1] - prevPos[1])**2))
             velPub.publish(vel_msg)
+            rospy.sleep(1.3)
 
             #stop moving
-            rospy.sleep(2)
             vel_msg.angular.z = 0
             vel_msg.linear.x = 0
             velPub.publish(vel_msg)
