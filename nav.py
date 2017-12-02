@@ -68,7 +68,7 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
         #initialize grid setup and path
         vicon = ViconTrackerPoseHandler(None, None, "", 51023, "ScottsHead")
         motion = AStar()
-        human = (0,0)
+        human = (0,-2.5)
         htheta = 0
         motion.init_grid(-3., -3., 3.5, 3.5, 0.5, (navx,navy), (xtarget,ytarget), theta, human)
         rospy.loginfo("The Destination is: " + str((motion.end.x,motion.end.y)))
@@ -102,17 +102,24 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
             #face towards target
             vel_msg.angular.z = math.atan2(move[1] - prevPos[1], move[0] - prevPos[0]) - prevDir
             vel_msg.linear.x =  0
-            velPub.publish(vel_msg)
 
             prevDir += vel_msg.angular.z
 
             angle = round(math.degrees(vel_msg.angular.z)/45)*45
+            neg = 1
+            if angle < 0: 
+                neg = -1
             if angle == 45 or angle == -45:
-                rospy.sleep(1.17)
+                vel_msg.angular.z -= 0.02*neg
             elif angle == 90 or -90:
-                rospy.sleep(1.11)
+                vel_msg.angular.z -= 0.04*neg
+            elif angle == 135 or -135:
+                vel_msg.angular.z -= 0.1*neg
             else:
-                rospy.sleep(1.1)
+                vel_msg.angular.z -= 0.13*neg
+
+            velPub.publish(vel_msg)
+            rospy.sleep(1.11)
 
             #move towards target
             vel_msg.angular.z = 0
@@ -131,7 +138,7 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
 
             #get human pose after move
             track = vicon.getPose()
-            rospy.loginfo(track)
+            rospy.loginfo("Vicon Pose: " + str(track))
             hx = round(track[0] * 2) / 2 #round(track[0] * 2) / 2.0
             hy = round(track[1] * 2) / 2
             hdir = math.radians(round(math.degrees(track[2])/45)*45)
@@ -186,15 +193,19 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
         tend = rospy.get_time()
         vel_msg.angular.z = math.atan2(move[1] - prevPos[1], move[0] - prevPos[0]) - prevDir
         vel_msg.linear.x =  0
-        velPub.publish(vel_msg)
 
         angle = round(math.degrees(vel_msg.angular.z)/45)*45
         if angle == 45 or angle == -45:
-            rospy.sleep(1.17)
+            vel_msg.angular.z -= 0.02
         elif angle == 90 or -90:
-            rospy.sleep(1.11)
+            vel_msg.angular.z -= 0.04
+        elif angle == 135 or -135:
+            vel_msg.angular.z -= 0.1
         else:
-            rospy.sleep(1.1)
+            vel_msg.angular.z -= 0.13
+
+        velPub.publish(vel_msg)
+        rospy.sleep(1.11)
 
         #stop
         vel_msg.angular.z = 0
@@ -319,11 +330,11 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
 
 if __name__ == '__main__':
     try:
-        robot = False
+        robot = True
         if robot:
-            navx = 2
-            navy = 2
-            xtarget = 1
+            navx = -1
+            navy = 0
+            xtarget = -3
             ytarget = -3
             theta = 1
             hmm = True

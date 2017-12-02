@@ -347,9 +347,18 @@ class AStar(object):
                 d1 = humanDir
                 d2 = math.atan2(mcoor[1] - humanPos[1], mcoor[0] - humanPos[0]) - humanDir
                 d3 = math.atan2(move2[1] - mcoor[1], move2[0] - mcoor[0]) - d2
-                d1 = math.radians(round(math.degrees(d1)/45)*45)
-                d2 = math.radians(round(math.degrees(d2)/45)*45)
-                d3 = math.radians(round(math.degrees(d3)/45)*45)
+                degrees1 = round(math.degrees(d1)/45)*45
+                degrees2 = round(math.degrees(d2)/45)*45
+                degrees3 = round(math.degrees(d3)/45)*45
+                if degrees1 == 360:
+                    degrees1 = 0
+                if degrees2 == 360:
+                    degrees2 = 0
+                if degrees3 == 360:
+                    degrees3 = 0
+                d1 = math.radians(degrees1)
+                d2 = math.radians(degrees2)
+                d3 = math.radians(degrees3)
                 if d1 < 0.0:
                     d1 += (math.pi * 2.0)
                 if d2 < 0.0:
