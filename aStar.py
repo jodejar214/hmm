@@ -110,7 +110,7 @@ class AStar(object):
 
         dist = math.sqrt(((x - xtarget)**2) + ((y - ytarget)**2))
         dist_cost = 0
-        if dist >= 2.0:
+        if dist >= 1.0:
             dist_cost = dist
         elif dist == 0.0:
             dist_cost = 100.0

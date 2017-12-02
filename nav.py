@@ -337,7 +337,7 @@ if __name__ == '__main__':
             xtarget = -3
             ytarget = -3
             theta = 1
-            hmm = True
+            hmm = False
             socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot)
         else:
             navx = 1
