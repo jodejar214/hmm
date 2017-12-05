@@ -7,7 +7,7 @@ import math
 def run():
 	rospy.init_node("test", anonymous=True)
 
-	vicon = ViconTrackerPoseHandler(None, None, "",51023, "ScottsHead")
+	vicon = ViconTrackerPoseHandler(None, None, "",51040, "helmet")
 
 	# for i in range(0,4):
 	# 	rospy.sleep(2.5)
@@ -17,10 +17,10 @@ def run():
 	pub = rospy.Publisher("/cmd_vel", Twist, queue_size=10)
 	rospy.sleep(1)
 	#face towards target
-	vel_msg.angular.z = math.radians(45) - 0.02
+	# vel_msg.angular.z = math.radians(-45) + 0.02
 	# vel_msg.angular.z = math.radians(90) - 0.04
-	# vel_msg.angular.z = math.radians(180) - 0.13
-	# vel_msg.angular.z = math.radians(135) - 0.1
+	vel_msg.angular.z = math.radians(180) + 0.13
+	# vel_msg.angular.z = math.radians(-135) + 0.1
 	vel_msg.linear.x =  0
 	pub.publish(vel_msg)
 

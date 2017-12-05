@@ -1,0 +1,160 @@
+Subject 1
+Condition = HMM False
+Path Intersect? 0
+Collision? 0
+The Total Number of Path Calculations: 5
+Travelling took 21.5163831711
+
+
+Subject 1
+Condition = HMM True
+Path Intersect? 0
+Collision? 1
+The Total Number of Path Calculations: 2
+Travelling took 21.5115401745
+
+
+Subject 2
+Condition = HMM True
+Path Intersect? 0
+Collision? 0
+The Total Number of Path Calculations: 1
+Travelling took 24.923099041
+
+
+Subject 2
+Condition = HMM False
+Path Intersect? 0
+Collision? 0
+The Total Number of Path Calculations: 4
+Travelling took 21.5175909996
+
+
+Subject 3
+Condition = HMM False
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 4
+Travelling took 18.0975921154
+
+
+Subject 3
+Condition = HMM True
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 1
+Travelling took 21.5072250366
+
+
+Subject 4
+Condition = HMM True
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 1
+Travelling took 18.0975699425
+
+
+Subject 4
+Condition = HMM False
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 5
+Travelling took 21.5191919804
+
+
+Subject 5
+Condition = HMM False
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 4
+Travelling took 18.0978109837
+
+
+Subject 5
+Condition = HMM True
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 2
+Travelling took 18.0997509956
+
+
+Subject 6
+Condition = HMM True
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 1
+Travelling took 24.9314160347
+
+
+Subject 6
+Condition = HMM False
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 4
+Travelling took 21.5142149925
+
+
+Subject 7
+Condition = HMM False
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 3
+Travelling took 21.5156719685
+
+
+Subject 7
+Condition = HMM True
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 1
+Travelling took 24.9293301105
+
+
+Subject 8
+Condition = HMM True
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 2
+Travelling took 18.1001141071
+
+
+Subject 8
+Condition = HMM False
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 3
+Travelling took 18.0993139744
+
+
+Subject 9
+Condition = HMM False
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 3
+Travelling took 18.0971820354
+
+
+Subject 9
+Condition = HMM True
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 1
+Travelling took 24.9284820557
+
+
+Subject 10
+Condition = HMM True
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 0
+Travelling took 18.0845389366
+
+
+Subject 10
+Condition = HMM False
+Path Intersect?
+Collision?
+The Total Number of Path Calculations: 4
+Travelling took 24.9334621429
+
+

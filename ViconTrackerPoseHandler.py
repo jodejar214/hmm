@@ -61,7 +61,7 @@ class ViconTrackerPoseHandler(object):
         return array([self.x, self.y, self.o])
 
 if __name__ == "__main__":
-    a = ViconTrackerPoseHandler(None, None, "",51023, "ScottsHead")
+    a = ViconTrackerPoseHandler(None, None, "",51040, "helmet")
     print a.getPose()
     for ii in range(0,40,1):
         time.sleep(1)

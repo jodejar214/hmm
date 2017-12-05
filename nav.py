@@ -44,7 +44,7 @@ def setup(navx, navy, xtarget, ytarget, theta, xobs, yobs):
     rospy.loginfo("Obstacle Turtle:"+str((xobs,yobs)))
 
 #move navigating turtle to target in grid with costs
-def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
+def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot, subj):
     global turtlePose
 
     rospy.init_node('social_navigation', anonymous=True)
@@ -66,7 +66,7 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
         rospy.loginfo("Start Robot")
 
         #initialize grid setup and path
-        vicon = ViconTrackerPoseHandler(None, None, "", 51023, "ScottsHead")
+        vicon = ViconTrackerPoseHandler(None, None, "", 51040, "helmet")
         motion = AStar()
         human = (0,-2.5)
         htheta = 0
@@ -111,9 +111,9 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
                 neg = -1
             if angle == 45 or angle == -45:
                 vel_msg.angular.z -= 0.02*neg
-            elif angle == 90 or -90:
+            elif angle == 90 or angle == -90:
                 vel_msg.angular.z -= 0.04*neg
-            elif angle == 135 or -135:
+            elif angle == 135 or angle == -135:
                 vel_msg.angular.z -= 0.1*neg
             else:
                 vel_msg.angular.z -= 0.13*neg
@@ -328,17 +328,27 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot):
     rospy.loginfo("Travelling took " + str(tnav))
     rospy.loginfo("The Total Number of Path Calculations: " + str(pathCalcCount))
 
+    #write observations to file
+    with open("results.txt","a") as f:
+        f.write("Subject "+str(subj)+"\n")
+        f.write("Condition = HMM "+str(hmm)+"\n")
+        f.write("Path Intersect?\n")
+        f.write("Collision?\n")
+        f.write("The Total Number of Path Calculations: " + str(pathCalcCount) + "\n")
+        f.write("Travelling took " + str(tnav) + "\n\n\n")
+
 if __name__ == '__main__':
     try:
         robot = True
         if robot:
-            navx = -1
+            navx = 2.5
             navy = 0
-            xtarget = -3
-            ytarget = -3
+            xtarget = -0.5
+            ytarget = -2.5
             theta = 1
             hmm = False
-            socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot)
+            subj = 10
+            socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot, subj)
         else:
             navx = 1
             navy = 1
@@ -346,6 +356,7 @@ if __name__ == '__main__':
             ytarget = 9
             theta = 1
             hmm = True
-            socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot)
+            subj = 1
+            socialNavigation(navx,navy,xtarget, ytarget, theta, hmm, robot, subj)
     except rospy.ROSInterruptException:
         pass
