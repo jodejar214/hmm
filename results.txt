@@ -96,8 +96,6 @@ Travelling took 18.0993139744
 
 Subject 9
 Condition = HMM False
-Path Intersect?
-Collision?
 The Total Number of Path Calculations: 3
 Travelling took 18.0971820354
 
