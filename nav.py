@@ -68,7 +68,7 @@ def socialNavigation(navx, navy, xtarget, ytarget, theta, hmm, robot, subj):
         #initialize grid setup and path
         vicon = ViconTrackerPoseHandler(None, None, "", 51040, "helmet")
         motion = AStar()
-        human = (0,-2.5)
+        human = (0,0)
         htheta = 0
         motion.init_grid(-3., -3., 3.5, 3.5, 0.5, (navx,navy), (xtarget,ytarget), theta, human)
         rospy.loginfo("The Destination is: " + str((motion.end.x,motion.end.y)))
